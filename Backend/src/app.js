@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import userRouter from './routes/user.route.js';
+import sightingRoutes from './routes/sightingRoutes.js';
+import missingPersonRoutes from './routes/missingPersonRoutes.js';
+import errorHandler from './middlewares/errorHandler.js';
 // import session from 'express-session';
 
 const app = express();
@@ -30,8 +33,8 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/user', userRouter);
-app.use('/api/v1/missing-persons', require('./src/routes/missingPersonRoutes'));
-app.use('/api/v1/sightings', require('./src/routes/sightingRoutes'));
+app.use('/api/v1/missing-persons', missingPersonRoutes);
+app.use('/api/v1/sightings', sightingRoutes);
 
 app.use(errorHandler);
 

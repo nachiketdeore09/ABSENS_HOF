@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const missingPersonSchema = new mongoose.Schema({
     name: {
@@ -53,4 +53,4 @@ const missingPersonSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model('MissingPerson', missingPersonSchema);
+export default mongoose.model('MissingPerson', missingPersonSchema);

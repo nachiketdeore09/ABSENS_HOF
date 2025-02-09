@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const sightingReportSchema = new mongoose.Schema({
     name: {
@@ -20,16 +20,8 @@ const sightingReportSchema = new mongoose.Schema({
         },
     },
     location: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            default: 'Point',
-        },
-        coordinates: {
-            type: [Number],
-            required: true,
-        },
-        address: String,
+        type: String,
+        default:"",
     },
     description: String,
     status: {
@@ -47,4 +39,4 @@ const sightingReportSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model('SightingReport', sightingReportSchema);
+export default mongoose.model('SightingReport', sightingReportSchema);
