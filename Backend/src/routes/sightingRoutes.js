@@ -6,7 +6,7 @@ import {
   getSightingReportById,
   updateSightingStatus
 } from '../controllers/sightingController.js';
-// import { upload } from '../config/cloudinary.js';
+import upload from '../middlewares/upload.js';
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ const router = express.Router();
 router.post(
   '/',
   verifyToken,
-//   upload.array('photos', 5),
+  upload.array('photos', 5),
   createSightingReport
 );
 

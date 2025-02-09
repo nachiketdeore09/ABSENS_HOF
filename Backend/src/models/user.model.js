@@ -30,11 +30,12 @@ const userSchema = mongoose.Schema(
         },
         fullname: {
             type: String,
-            required: true,
+            // required: true,
             trim: true,
         },
         avatar: {
             type: String,
+            default:""
         },
         refreshToken: {
             type: String,

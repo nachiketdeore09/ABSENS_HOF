@@ -6,7 +6,7 @@ import {
     getMissingPersonById,
     updateMissingPersonStatus,
 } from '../controllers/missingPersonController.js';
-// import { upload } from '../config/cloudinary.js';
+import upload from '../middlewares/upload.js';
 
 const router = express.Router();
 
@@ -15,13 +15,13 @@ router.post(
     '/',
     verifyToken,
     //   authorize('authority', 'admin'),
-    //   upload.array('photos', 5), // Handle multiple images (max 5)
+      upload.array('photos', 5), // Handle multiple images (max 5)
     createMissingPerson,
 );
 
 // POST /api/v1/missing-persons/search (changed to POST for file upload)
 router.post('/search', 
-    // upload.array('images', 5),
+    upload.array('images', 5),
      searchMissingPersons);
 
 // GET /api/v1/missing-persons/:id

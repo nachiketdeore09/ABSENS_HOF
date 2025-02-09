@@ -19,7 +19,7 @@ export const createMissingPerson = async (req, res) => {
     // Create missing person record
     const missingPerson = await MissingPerson.create({
       ...req.body,
-      photos: cloudinaryResults.map(result => result.url),
+      photos: cloudinaryResults.map(result => result.secure_url),
       reportedBy: req.user.id
     });
 
