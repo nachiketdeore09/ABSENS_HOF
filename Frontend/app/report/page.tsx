@@ -19,7 +19,7 @@ export default function ReportPage() {
   };
 
   return (
-    <div className="container max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+    <div className="container max-w-7xl px-4 sm:px-6 lg:px-40 py-10">
       <div className="space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">Report Missing Person</h1>

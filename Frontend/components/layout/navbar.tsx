@@ -41,7 +41,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-[#004d40] text-white">
+    <header className="sticky top-0 z-50 w-full border-b bg-[#004d40] text- px-8">
       <div className="container flex h-16 items-center">
         <div className="mr-4 hidden md:flex flex-1">
           <Link href="/" className="mr-6 flex items-center space-x-2">

@@ -28,7 +28,11 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.use('/api/v1/user', userRouter);
 
+app.use('/api/v1/user', userRouter);
+app.use('/api/v1/missing-persons', require('./src/routes/missingPersonRoutes'));
+app.use('/api/v1/sightings', require('./src/routes/sightingRoutes'));
+
+app.use(errorHandler);
 
 export default app;
