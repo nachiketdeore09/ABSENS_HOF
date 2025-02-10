@@ -11,6 +11,7 @@ import os
 from pinecone import Pinecone, ServerlessSpec
 
 # Initialize Pinecone
+load_dotenv()
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 # Check if index exists, else create it
