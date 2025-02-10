@@ -11,7 +11,7 @@ import os
 from pinecone import Pinecone, ServerlessSpec
 
 # Initialize Pinecone
-pc = Pinecone(api_key="pcsk_7WvWm8_CXpDZBAqGkM5UfHavGU2Wbp2uCQ9imE2enwS1MJquMKHDU9HJGf7X5rxBo1xLWq")
+pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 # Check if index exists, else create it
 index_name = "face-recognition"
