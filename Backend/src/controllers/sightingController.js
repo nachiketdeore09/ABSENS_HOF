@@ -2,116 +2,133 @@ import SightingReport from '../models/SightingReport.model.js';
 import MissingPerson from '../models/MissingPerson.model.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import ApiResponse from '../utils/apiResponse.js';
+import mongoose from 'mongoose';
 
 export const createSightingReport = async (req, res) => {
-  try {
-    const { personId, description, location } = req.body;
-    
-    // Validate required fields
-    if (!personId || !location) {
-      return ApiResponse.error(res, 400, 'Person ID and location are required');
+    try {
+        const { name, description, location } = req.body;
+        // console.log('req.body:', req.body);
+        // console.log("req.files:", req.files);
+
+        // Validate required fields
+        if (!location) {
+            return ApiResponse.error(res, 400, 'Location is required');
+        }
+
+        // Upload photos
+        const photos = await Promise.all(
+            req.files.map((file) => uploadToCloudinary(file.buffer)),
+        );
+
+        // console.log("first photo:", photos[0]);
+        // console.log("photos:", photos);
+
+        // Create report
+        const report = await SightingReport.create({
+            name: name || 'Unknown',
+            reportedBy: req.user.id,
+            photos: photos,
+            description,
+            location,
+            timestamp: new Date(),
+        });
+
+        console.log('report:', report);
+
+        return ApiResponse.success(res, {
+            status: 201,
+            message: 'Sighting report created successfully',
+            data: report,
+        });
+    } catch (error) {
+        console.error('Create sighting error:', error);
+        return ApiResponse.error(res, 500, 'Server Error');
     }
-
-    // Check if person exists
-    const person = await MissingPerson.findById(personId);
-    if (!person) {
-      return ApiResponse.error(res, 404, 'Missing person not found');
-    }
-
-    // Upload photos
-    const photos = await Promise.all(
-      req.files.map(file => uploadToCloudinary(file.path))
-    );
-
-    // Create report
-    const report = await SightingReport.create({
-      person: personId,
-      reportedBy: req.user.id,
-      photos: photos.map(p => p.url),
-      description,
-      location: {
-        type: 'Point',
-        coordinates: location.coordinates,
-        address: location.address
-      },
-      timestamp: new Date()
-    });
-
-    return ApiResponse.success(
-      res,
-      201,
-      'Sighting report created successfully',
-      report
-    );
-
-  } catch (error) {
-    console.error('Create sighting error:', error);
-    return ApiResponse.error(res, 500, 'Server Error');
-  }
 };
 
 export const getSightingReports = async (req, res) => {
-  try {
-    const { status, personId } = req.query;
-    const filter = {};
+    try {
+        const { status, personId } = req.query;
+        const filter = {};
 
-    if (status) filter.status = status;
-    if (personId) filter.person = personId;
+        if (status) filter.status = status;
+        if (personId) filter.person = personId;
 
-    const reports = await SightingReport.find(filter)
-      .populate('person', 'name age photos')
-      .populate('reportedBy', 'name role')
-      .sort({ timestamp: -1 });
+        const reports = await SightingReport.find(filter)
+            .populate('person', 'name age photos')
+            .populate('reportedBy', 'name role')
+            .sort({ timestamp: -1 });
 
-    return ApiResponse.success(res, 200, 'Sighting reports', reports);
-  } catch (error) {
-    console.error('Get reports error:', error);
-    return ApiResponse.error(res, 500, 'Server Error');
-  }
+        return ApiResponse.success(res, 200, 'Sighting reports', reports);
+    } catch (error) {
+        console.error('Get reports error:', error);
+        return ApiResponse.error(res, 500, 'Server Error');
+    }
 };
 
 export const getSightingReportById = async (req, res) => {
-  try {
-    const report = await SightingReport.findById(req.params.id)
-      .populate('person', 'name age photos')
-      .populate('reportedBy', 'name email phone');
+    try {
+        const { sightingReportIds } = req.body; // Expecting an array of sighting report IDs
 
-    if (!report) {
-      return ApiResponse.error(res, 404, 'Report not found');
+        if (!sightingReportIds || !Array.isArray(sightingReportIds)) {
+            return ApiResponse.error(res, {
+                statusCode: 400,
+                message:
+                    'Invalid input: Expected an array of sighting report IDs',
+            });
+        }
+
+        const validObjectIds = sightingReportIds
+            .filter((id) => mongoose.Types.ObjectId.isValid(id))
+            .map((id) => new mongoose.Types.ObjectId(id));
+
+        if (validObjectIds.length === 0) {
+            return ApiResponse.error(res, {
+                statusCode: 400,
+                message: 'No valid sighting report IDs provided',
+            });
+        }
+
+        const reports = await SightingReport.find({
+            _id: { $in: validObjectIds },
+        });
+
+        return ApiResponse.success(res, {
+            status: 200,
+            message: 'Sighting report',
+            data: reports,
+        });
+    } catch (error) {
+        console.error('Get report error:', error);
+        return ApiResponse.error(res, 500, 'Server Error');
     }
-
-    return ApiResponse.success(res, 200, 'Sighting report', report);
-  } catch (error) {
-    console.error('Get report error:', error);
-    return ApiResponse.error(res, 500, 'Server Error');
-  }
 };
 
 export const updateSightingStatus = async (req, res) => {
-  try {
-    const { status, verificationNotes } = req.body;
-    
-    if (!['pending', 'verified', 'rejected'].includes(status)) {
-      return ApiResponse.error(res, 400, 'Invalid status');
+    try {
+        const { status, verificationNotes } = req.body;
+
+        if (!['pending', 'verified', 'rejected'].includes(status)) {
+            return ApiResponse.error(res, 400, 'Invalid status');
+        }
+
+        const report = await SightingReport.findByIdAndUpdate(
+            req.params.id,
+            {
+                status,
+                verificationNotes,
+                $set: { verifiedBy: req.user.id },
+            },
+            { new: true, runValidators: true },
+        );
+
+        if (!report) {
+            return ApiResponse.error(res, 404, 'Report not found');
+        }
+
+        return ApiResponse.success(res, 200, 'Status updated', report);
+    } catch (error) {
+        console.error('Update status error:', error);
+        return ApiResponse.error(res, 500, 'Server Error');
     }
-
-    const report = await SightingReport.findByIdAndUpdate(
-      req.params.id,
-      {
-        status,
-        verificationNotes,
-        $set: { verifiedBy: req.user.id }
-      },
-      { new: true, runValidators: true }
-    );
-
-    if (!report) {
-      return ApiResponse.error(res, 404, 'Report not found');
-    }
-
-    return ApiResponse.success(res, 200, 'Status updated', report);
-  } catch (error) {
-    console.error('Update status error:', error);
-    return ApiResponse.error(res, 500, 'Server Error');
-  }
 };

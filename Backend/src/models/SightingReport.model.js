@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const sightingReportSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Please add a name'],
+        default: 'Unknown',
     },
     reportedBy: {
         type: mongoose.Schema.ObjectId,
@@ -21,9 +21,9 @@ const sightingReportSchema = new mongoose.Schema({
     },
     location: {
         type: String,
-        default:"",
+        required: [true, 'Please add a location'],
     },
-    description: String,
+    description: { type: String, default: 'No description provided' },
     status: {
         type: String,
         enum: ['pending', 'verified', 'rejected'],

@@ -25,7 +25,7 @@ router.post('/search',
      searchMissingPersons);
 
 // GET /api/v1/missing-persons/:id
-router.get('/:id', getMissingPersonById);
+router.get('/matches', getMissingPersonById);
 
 // PUT /api/v1/missing-persons/:id/status
 router.put(

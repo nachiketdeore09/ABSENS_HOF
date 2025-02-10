@@ -21,8 +21,8 @@ router.post(
 // GET /api/v1/sightings
 router.get('/', verifyToken, getSightingReports);
 
-// GET /api/v1/sightings/:id
-router.get('/:id', verifyToken, getSightingReportById);
+// POST /api/v1/sightings/matches
+router.post('/matches', verifyToken, getSightingReportById);
 
 // PUT /api/v1/sightings/:id/status
 router.put(

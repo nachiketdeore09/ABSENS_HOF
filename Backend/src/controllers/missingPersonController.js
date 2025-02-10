@@ -1,6 +1,7 @@
 import MissingPerson from '../models/MissingPerson.model.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import ApiResponse from '../utils/apiResponse.js';
+import mongoose from 'mongoose';
 
 export const createMissingPerson = async (req, res) => {
     try {
@@ -78,20 +79,44 @@ export const searchMissingPersons = async (req, res) => {
 
 export const getMissingPersonById = async (req, res) => {
     try {
-        const person = await MissingPerson.findById(req.params.id).populate(
-            'reportedBy',
-            'name email phone',
-        );
-
-        if (!person) {
-            return ApiResponse.error(res, 404, 'Missing person not found');
+        // Expecting the frontend to send { ids: [id1, id2, id3, ...] }
+        const { ids } = req.body;
+    
+        // Validate that ids exist and is an array
+        if (!ids || !Array.isArray(ids)) {
+          return ApiResponse.error(res, {
+            statusCode: 400,
+            message: 'Invalid input: expected an array of IDs',
+          });
         }
-
-        return ApiResponse.success(res, {status:200,message: 'Record found',data: person});
-    } catch (error) {
-        console.error('Get by ID error:', error);
-        return ApiResponse.error(res, 500, 'Server Error');
-    }
+    
+        // Filter out invalid MongoDB ObjectIds
+        const validIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+        if (validIds.length === 0) {
+          return ApiResponse.error(res, {
+            statusCode: 400,
+            message: 'No valid IDs provided',
+          });
+        }
+    
+        // Query the MissingPerson collection for documents with these IDs
+        const missingPersons = await MissingPerson.find({
+          _id: { $in: validIds },
+        });
+    
+        return ApiResponse.success(res, {
+          statusCode: 200,
+          message: 'Missing persons retrieved successfully',
+          data: missingPersons,
+        });
+      } catch (error) {
+        console.error('Error fetching missing persons:', error);
+        return ApiResponse.error(res, {
+          statusCode: 500,
+          message: 'Server error',
+          error: error.message,
+        });
+      }
 };
 
 export const updateMissingPersonStatus = async (req, res) => {
