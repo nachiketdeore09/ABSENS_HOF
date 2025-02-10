@@ -3,6 +3,7 @@ import MissingPerson from '../models/MissingPerson.model.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import ApiResponse from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
+import User from '../models/user.model.js';
 
 export const createSightingReport = async (req, res) => {
     try {
@@ -33,7 +34,10 @@ export const createSightingReport = async (req, res) => {
             timestamp: new Date(),
         });
 
-        console.log('report:', report);
+        // console.log('report:', report);
+        const user = await User.findById(req.user.id);
+        user.reportedCases.push(sightingReport._id);
+        await user.save();
 
         return ApiResponse.success(res, {
             status: 201,

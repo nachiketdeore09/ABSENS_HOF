@@ -24,8 +24,8 @@ router.post('/search',
     upload.array('images', 5),
      searchMissingPersons);
 
-// GET /api/v1/missing-persons/:id
-router.get('/matches', getMissingPersonById);
+// POST /api/v1/missing-persons/matches
+router.post('/matches', getMissingPersonById);
 
 // PUT /api/v1/missing-persons/:id/status
 router.put(

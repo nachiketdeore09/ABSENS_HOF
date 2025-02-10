@@ -2,6 +2,7 @@ import MissingPerson from '../models/MissingPerson.model.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import ApiResponse from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
+import User from '../models/user.model.js';
 
 export const createMissingPerson = async (req, res) => {
     try {
@@ -41,6 +42,10 @@ export const createMissingPerson = async (req, res) => {
             photos: cloudinaryResults, // Use URLs returned from Cloudinary
             reportedBy: req.user.id,
         });
+        
+        const user = await User.findById(req.user.id);
+        user.missingCases.push(missingPerson._id);
+        await user.save();
 
         return ApiResponse.success(res, {
             status: 201,

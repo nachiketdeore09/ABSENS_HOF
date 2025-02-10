@@ -35,8 +35,23 @@ const userSchema = mongoose.Schema(
         },
         avatar: {
             type: String,
-            default:""
+            default: '',
         },
+        // Array of reported cases (SightingReport)
+        reportedCases: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'SightingReport',
+            },
+        ],
+        // Array of missing person cases the user is searching for
+        missingCases: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'MissingPerson',
+            },
+        ],
+
         refreshToken: {
             type: String,
         },
@@ -58,7 +73,7 @@ userSchema.methods.generateAccessToken = async function () {
     return jwt.sign(
         //Payload
         {
-            _id : this._id,
+            _id: this._id,
             username: this.username,
             email: this.email,
         },
@@ -66,10 +81,9 @@ userSchema.methods.generateAccessToken = async function () {
         process.env.ACCESS_TOKEN_SECRET,
         // Expiry
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
-        }
-        
-    )
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+        },
+    );
 };
 
 userSchema.methods.generateRefreshToken = async function () {
