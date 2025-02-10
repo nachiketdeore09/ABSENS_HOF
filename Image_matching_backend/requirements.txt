@@ -1,0 +1,5 @@
+uvicorn==0.34.0
+virtualenv==20.29.1
+fastapi==0.115.7
+insightface==0.10.0
+numpy==1.26.2
