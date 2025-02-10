@@ -1,203 +1,374 @@
 "use client";
+import React, { useState } from 'react';
+import { 
+  User, Settings, FileText, Bell, Search, 
+  AlertTriangle, CheckCircle, MapPin, Calendar,
+  X, Camera
+} from 'lucide-react';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Bell,
-  User,
-  FileText,
-  Search,
-  AlertTriangle,
-  Clock,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+// Mock user data based on the schema
+const userData = {
+  username: "john_doe",
+  email: "john.doe@example.com",
+  fullname: "John Doe",
+  gender: "Male",
+  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+  reportedCases: [
+    { id: 1, title: "Missing Person Case #1", status: "Active", date: "2024-03-15" },
+    { id: 2, title: "Missing Person Case #2", status: "Resolved", date: "2024-03-10" }
+  ],
+  missingCases: [
+    { id: 1, title: "Search Case #1", location: "Mumbai", date: "2024-03-12" },
+    { id: 2, title: "Search Case #2", location: "Delhi", date: "2024-03-08" }
+  ]
+};
 
-export default function DashboardPage() {
-  const [activeReports] = useState([
-    {
-      id: 1,
-      name: "Rahul Kumar",
-      status: "Active",
-      date: "2024-03-15",
-      location: "Prayagraj",
-      matches: 2,
-    },
-    {
-      id: 2,
-      name: "Priya Singh",
-      status: "Found",
-      date: "2024-03-10",
-      location: "Varanasi",
-      matches: 1,
-    },
-  ]);
+function DashboardPage() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editedProfile, setEditedProfile] = useState({
+    fullname: userData.fullname,
+    email: userData.email,
+    gender: userData.gender,
+    avatar: userData.avatar
+  });
 
-  const [recentActivity] = useState([
-    {
-      id: 1,
-      type: "Match Found",
-      description: "Potential match found for case #MP2024-156",
-      date: "2024-03-17T14:30:00",
-    },
-    {
-      id: 2,
-      type: "Report Updated",
-      description: "Added new photo to case #MP2024-157",
-      date: "2024-03-17T13:15:00",
-    },
-  ]);
+  const handleProfileUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would typically make an API call to update the user profile
+    console.log('Profile update:', editedProfile);
+    setIsEditingProfile(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditedProfile(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   return (
-    <div className="container py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome back, manage your reports and activities
-            </p>
+    <div className="min-h-screen bg-gray-50">
+     
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Profile Section */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="p-6">
+            {!isEditingProfile ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="relative">
+                    <img
+                      src={userData.avatar}
+                      alt={userData.fullname}
+                      className="h-24 w-24 rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="ml-6">
+                    <h2 className="text-2xl font-bold text-gray-900">{userData.fullname}</h2>
+                    <p className="text-gray-600">@{userData.username}</p>
+                    <p className="text-gray-600">{userData.email}</p>
+                    <div className="mt-2 flex items-center">
+                      <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                        {userData.gender}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsEditingProfile(true)}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Edit Profile
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setIsEditingProfile(false)}
+                  className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+                <form onSubmit={handleProfileUpdate} className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col items-center md:items-start">
+                      <div className="relative">
+                        <img
+                          src={editedProfile.avatar}
+                          alt="Profile"
+                          className="h-24 w-24 rounded-full object-cover"
+                        />
+                        <label
+                          htmlFor="avatar-upload"
+                          className="absolute bottom-0 right-0 p-1 bg-indigo-600 rounded-full text-white cursor-pointer hover:bg-indigo-700"
+                        >
+                          <Camera className="h-4 w-4" />
+                        </label>
+                        <input
+                          id="avatar-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            // Handle image upload
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              // Here you would typically upload the image to your server
+                              // and get back a URL
+                              console.log('File selected:', file);
+                            }
+                          }}
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">Click the camera icon to update your photo</p>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="fullname" className="block text-sm font-medium text-gray-700">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          id="fullname"
+                          name="fullname"
+                          value={editedProfile.fullname}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={editedProfile.email}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                          Gender
+                        </label>
+                        <select
+                          id="gender"
+                          name="gender"
+                          value={editedProfile.gender}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Others">Others</option>
+                        </select>
+                      </div>
+                      <div className="flex justify-end space-x-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingProfile(false)}
+                          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
-          <Button className="gap-2">
-            <Bell className="h-4 w-4" />
-            Notifications
-          </Button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {dashboardStats.map((stat) => (
-            <Card key={stat.label}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.label}
-                </CardTitle>
-                <stat.icon className={`h-4 w-4 text-${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <FileText className="h-8 w-8 text-blue-500" />
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Total Cases</p>
+                <p className="text-2xl font-bold">{userData.reportedCases.length + userData.missingCases.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Active Cases</p>
+                <p className="text-2xl font-bold">
+                  {userData.reportedCases.filter(c => c.status === 'Active').length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Resolved Cases</p>
+                <p className="text-2xl font-bold">
+                  {userData.reportedCases.filter(c => c.status === 'Resolved').length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <Search className="h-8 w-8 text-purple-500" />
+              <div className="ml-4">
+                <p className="text-sm text-gray-600">Missing Cases</p>
+                <p className="text-2xl font-bold">{userData.missingCases.length}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="grid gap-8 md:grid-cols-7">
-          {/* Reports List */}
-          <div className="md:col-span-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Reports</CardTitle>
-                <CardDescription>
-                  Manage and track your missing person reports
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === 'overview'
+                    ? 'border-b-2 border-indigo-500 text-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('reported')}
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === 'reported'
+                    ? 'border-b-2 border-indigo-500 text-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Reported Cases
+              </button>
+              <button
+                onClick={() => setActiveTab('missing')}
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === 'missing'
+                    ? 'border-b-2 border-indigo-500 text-indigo-600'
+                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Missing Cases
+              </button>
+            </nav>
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Recent Activity</h3>
                 <div className="space-y-4">
-                  {activeReports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <div className="font-medium">{report.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {report.location} • {new Date(report.date).toLocaleDateString()}
+                  {[...userData.reportedCases, ...userData.missingCases]
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .slice(0, 5)
+                    .map((case_, index) => (
+                      <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
+                        <div className="flex-shrink-0">
+                          {'status' in case_ ? (
+                            <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                          ) : (
+                            <Search className="h-6 w-6 text-purple-500" />
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-900">{case_.title}</p>
+                          <div className="flex items-center mt-1">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="ml-2 text-sm text-gray-500">
+                              {new Date(case_.date).toLocaleDateString()}
+                            </span>
+                            {'location' in case_ && (
+                              <>
+                                <MapPin className="h-4 w-4 text-gray-400 ml-4" />
+                                <span className="ml-2 text-sm text-gray-500">
+                                  {case_.location}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className={`text-sm ${
-                          report.status === "Active" ? "text-orange-500" : "text-green-500"
-                        }`}>
-                          {report.status}
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'reported' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Reported Cases</h3>
+                <div className="space-y-4">
+                  {userData.reportedCases.map((case_, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center">
+                        <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-gray-900">{case_.title}</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(case_.date).toLocaleDateString()}
+                          </p>
                         </div>
-                        <Button variant="outline" size="sm">
-                          View
-                        </Button>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-sm ${
+                        case_.status === 'Active' 
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {case_.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'missing' && (
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Missing Cases</h3>
+                <div className="space-y-4">
+                  {userData.missingCases.map((case_, index) => (
+                    <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
+                      <Search className="h-6 w-6 text-purple-500" />
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-900">{case_.title}</p>
+                        <div className="flex items-center mt-1">
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                          <span className="ml-2 text-sm text-gray-500">{case_.location}</span>
+                          <Calendar className="h-4 w-4 text-gray-400 ml-4" />
+                          <span className="ml-2 text-sm text-gray-500">
+                            {new Date(case_.date).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Activity Feed */}
-          <div className="md:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>
-                  Latest updates and notifications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="flex gap-4 p-4 border rounded-lg"
-                    >
-                      <div className="mt-0.5">
-                        {activity.type === "Match Found" ? (
-                          <AlertTriangle className="h-5 w-5 text-orange-500" />
-                        ) : (
-                          <FileText className="h-5 w-5 text-blue-500" />
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="font-medium">{activity.type}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {activity.description}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(activity.date).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-const dashboardStats = [
-  {
-    label: "Active Reports",
-    value: "3",
-    icon: AlertTriangle,
-    color: "orange-500"
-  },
-  {
-    label: "Potential Matches",
-    value: "12",
-    icon: Search,
-    color: "blue-500"
-  },
-  {
-    label: "Cases Resolved",
-    value: "8",
-    icon: CheckCircle,
-    color: "green-500"
-  },
-  {
-    label: "Pending Updates",
-    value: "4",
-    icon: Clock,
-    color: "yellow-500"
-  }
-];
+export default DashboardPage;
