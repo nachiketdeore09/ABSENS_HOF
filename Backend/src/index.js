@@ -13,6 +13,13 @@ dotenv.config({
   path: path.resolve(__dirname, '../.env') // Adjusted path based on typical project structure
 });
 
+// console.log('Cloudinary Config:', {
+//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+//   api_key: process.env.CLOUDINARY_API_KEY,
+//   api_secret: process.env.CLOUDINARY_API_SECRET
+// });
+
+
 // Verify environment variables
 // console.log('Environment variables:', {
 //   MONGO_URI: process.env.MONGODB_URI,

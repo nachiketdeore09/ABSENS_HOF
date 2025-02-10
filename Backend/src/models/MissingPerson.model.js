@@ -11,9 +11,12 @@ const missingPersonSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ['male', 'female', 'other'],
+        enum: ['male', 'female', 'other',"Male","Female","Other"],
     },
-    description: String,
+    description: {
+        type: String,
+        default: 'No description provided',
+    },
     missingDate: {
         type: Date,
         required: true,

@@ -15,7 +15,6 @@ const verifyToken = asyncHandler(async (req, res, next) => {
         const user = await User.findById(decodedToken?._id);
 
         if (!user) return new ApiError(401, 'Unauthorized access');
-
         req.user = user;
         next();
     } catch (error) {

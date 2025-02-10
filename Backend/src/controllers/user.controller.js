@@ -82,6 +82,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     const { username, password, email } = req.body;
+    // console.log(req.body);
 
     if (!username && !email) {
         throw new ApiError(400, 'Please provide a username or email');
@@ -106,7 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
     
     // Generate tokens
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-    console.log("Access Token:", accessToken, "Refresh Token:", refreshToken);
+    // console.log("Access Token:", accessToken, "Refresh Token:", refreshToken);
 
     // Save the refresh token on the user model
     user.refreshToken = refreshToken;
