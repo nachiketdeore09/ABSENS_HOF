@@ -1,52 +1,48 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Menu, AlertTriangle } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { useState } from "react";
-
-const routes = [
-  {
-    href: "/",
-    label: "Home",
-  },
-  {
-    href: "/report",
-    label: "Report Missing",
-  },
-  {
-    href: "/search",
-    label: "Search",
-  },
-  {
-    href: "/alerts",
-    label: "Alerts",
-  },
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-  }
-];
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ModeToggle } from "@/components/mode-toggle"
+import { Menu, AlertTriangle } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useState, useEffect } from "react"
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    // For example, assume the token is stored in localStorage under the key "token"
+    const token = localStorage.getItem("token")
+    if (token) {
+      setIsLoggedIn(true)
+    }
+  }, [])
+
+  // Base routes always visible
+  const routes = [
+    { href: "/", label: "Home" },
+    { href: "/report", label: "Report Missing" },
+    { href: "/search", label: "Search" },
+    { href: "/alerts", label: "Alerts" },
+  ]
+
+  // Conditionally add the dashboard link if the user is logged in
+  if (isLoggedIn) {
+    routes.push({ href: "/dashboard", label: "Dashboard" })
+  }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-[#004d40] text- px-8">
+    <header className="sticky top-0 z-50 w-full border-b bg-[#004d40] px-8">
       <div className="container flex h-16 items-center">
+        {/* Desktop Navigation */}
         <div className="mr-4 hidden md:flex flex-1">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <AlertTriangle className="h-6 w-6" />
-            <span className="text-xl font-bold">ABSENS</span>
+            <AlertTriangle className="h-6 w-6 text-white" />
+            <span className="text-xl font-bold text-white">ABSENS</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
             {routes.map((route) => (
@@ -63,6 +59,8 @@ export default function Navbar() {
             ))}
           </nav>
         </div>
+        
+        {/* Mobile Navigation using a Sheet */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon" className="mr-2 text-white">
@@ -92,15 +90,18 @@ export default function Navbar() {
             </nav>
           </SheetContent>
         </Sheet>
+
+        {/* Right Side: Register button or any additional controls */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-          </div>
-          <Button variant="secondary" className="mr-2" asChild>
-            <Link href="/emergency">Emergency</Link>
-          </Button>
+          <div className="w-full flex-1 md:w-auto md:flex-none"></div>
+          {!isLoggedIn && (
+            <Button variant="outline" className="mr-2 bg-[#004d40] text-white" asChild>
+              <Link href="/signup">Register</Link>
+            </Button>
+          )}
           <ModeToggle />
         </div>
       </div>
     </header>
-  );
+  )
 }

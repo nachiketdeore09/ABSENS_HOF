@@ -1,10 +1,8 @@
-"use client";
-import React, { useState } from 'react';
-import { 
-  User, Settings, FileText, Bell, Search, 
-  AlertTriangle, CheckCircle, MapPin, Calendar,
-  X, Camera
-} from 'lucide-react';
+"use client"
+import type React from "react"
+import { useState } from "react"
+import { FileText, Search, AlertTriangle, CheckCircle, MapPin, Calendar, X, Camera } from "lucide-react"
+import Image from "next/image"
 
 // Mock user data based on the schema
 const userData = {
@@ -15,42 +13,41 @@ const userData = {
   avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
   reportedCases: [
     { id: 1, title: "Missing Person Case #1", status: "Active", date: "2024-03-15" },
-    { id: 2, title: "Missing Person Case #2", status: "Resolved", date: "2024-03-10" }
+    { id: 2, title: "Missing Person Case #2", status: "Resolved", date: "2024-03-10" },
   ],
   missingCases: [
     { id: 1, title: "Search Case #1", location: "Mumbai", date: "2024-03-12" },
-    { id: 2, title: "Search Case #2", location: "Delhi", date: "2024-03-08" }
-  ]
-};
+    { id: 2, title: "Search Case #2", location: "Delhi", date: "2024-03-08" },
+  ],
+}
 
 function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview")
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedProfile, setEditedProfile] = useState({
     fullname: userData.fullname,
     email: userData.email,
     gender: userData.gender,
-    avatar: userData.avatar
-  });
+    avatar: userData.avatar,
+  })
 
   const handleProfileUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     // Here you would typically make an API call to update the user profile
-    console.log('Profile update:', editedProfile);
-    setIsEditingProfile(false);
-  };
+    console.log("Profile update:", editedProfile)
+    setIsEditingProfile(false)
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setEditedProfile(prev => ({
+    const { name, value } = e.target
+    setEditedProfile((prev) => ({
       ...prev,
-      [name]: value
-    }));
-  };
+      [name]: value,
+    }))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-     
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Section */}
         <div className="bg-white rounded-lg shadow mb-8">
@@ -59,7 +56,7 @@ function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="relative">
-                    <img
+                    <Image
                       src={userData.avatar}
                       alt={userData.fullname}
                       className="h-24 w-24 rounded-full object-cover"
@@ -95,11 +92,7 @@ function DashboardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col items-center md:items-start">
                       <div className="relative">
-                        <img
-                          src={editedProfile.avatar}
-                          alt="Profile"
-                          className="h-24 w-24 rounded-full object-cover"
-                        />
+                        <Image src={editedProfile.avatar} alt="Profile" className="h-24 w-24 rounded-full object-cover" />
                         <label
                           htmlFor="avatar-upload"
                           className="absolute bottom-0 right-0 p-1 bg-indigo-600 rounded-full text-white cursor-pointer hover:bg-indigo-700"
@@ -113,11 +106,11 @@ function DashboardPage() {
                           className="hidden"
                           onChange={(e) => {
                             // Handle image upload
-                            const file = e.target.files?.[0];
+                            const file = e.target.files?.[0]
                             if (file) {
                               // Here you would typically upload the image to your server
                               // and get back a URL
-                              console.log('File selected:', file);
+                              console.log("File selected:", file)
                             }
                           }}
                         />
@@ -209,7 +202,7 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Active Cases</p>
                 <p className="text-2xl font-bold">
-                  {userData.reportedCases.filter(c => c.status === 'Active').length}
+                  {userData.reportedCases.filter((c) => c.status === "Active").length}
                 </p>
               </div>
             </div>
@@ -220,7 +213,7 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Resolved Cases</p>
                 <p className="text-2xl font-bold">
-                  {userData.reportedCases.filter(c => c.status === 'Resolved').length}
+                  {userData.reportedCases.filter((c) => c.status === "Resolved").length}
                 </p>
               </div>
             </div>
@@ -241,31 +234,31 @@ function DashboardPage() {
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px">
               <button
-                onClick={() => setActiveTab('overview')}
+                onClick={() => setActiveTab("overview")}
                 className={`px-6 py-4 text-sm font-medium ${
-                  activeTab === 'overview'
-                    ? 'border-b-2 border-indigo-500 text-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  activeTab === "overview"
+                    ? "border-b-2 border-indigo-500 text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 Overview
               </button>
               <button
-                onClick={() => setActiveTab('reported')}
+                onClick={() => setActiveTab("reported")}
                 className={`px-6 py-4 text-sm font-medium ${
-                  activeTab === 'reported'
-                    ? 'border-b-2 border-indigo-500 text-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  activeTab === "reported"
+                    ? "border-b-2 border-indigo-500 text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 Reported Cases
               </button>
               <button
-                onClick={() => setActiveTab('missing')}
+                onClick={() => setActiveTab("missing")}
                 className={`px-6 py-4 text-sm font-medium ${
-                  activeTab === 'missing'
-                    ? 'border-b-2 border-indigo-500 text-indigo-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  activeTab === "missing"
+                    ? "border-b-2 border-indigo-500 text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 Missing Cases
@@ -274,7 +267,7 @@ function DashboardPage() {
           </div>
 
           <div className="p-6">
-            {activeTab === 'overview' && (
+            {activeTab === "overview" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Recent Activity</h3>
                 <div className="space-y-4">
@@ -284,7 +277,7 @@ function DashboardPage() {
                     .map((case_, index) => (
                       <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
                         <div className="flex-shrink-0">
-                          {'status' in case_ ? (
+                          {"status" in case_ ? (
                             <AlertTriangle className="h-6 w-6 text-yellow-500" />
                           ) : (
                             <Search className="h-6 w-6 text-purple-500" />
@@ -297,12 +290,10 @@ function DashboardPage() {
                             <span className="ml-2 text-sm text-gray-500">
                               {new Date(case_.date).toLocaleDateString()}
                             </span>
-                            {'location' in case_ && (
+                            {"location" in case_ && (
                               <>
                                 <MapPin className="h-4 w-4 text-gray-400 ml-4" />
-                                <span className="ml-2 text-sm text-gray-500">
-                                  {case_.location}
-                                </span>
+                                <span className="ml-2 text-sm text-gray-500">{case_.location}</span>
                               </>
                             )}
                           </div>
@@ -313,7 +304,7 @@ function DashboardPage() {
               </div>
             )}
 
-            {activeTab === 'reported' && (
+            {activeTab === "reported" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Reported Cases</h3>
                 <div className="space-y-4">
@@ -323,16 +314,14 @@ function DashboardPage() {
                         <AlertTriangle className="h-6 w-6 text-yellow-500" />
                         <div className="ml-4">
                           <p className="text-sm font-medium text-gray-900">{case_.title}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(case_.date).toLocaleDateString()}
-                          </p>
+                          <p className="text-sm text-gray-500">{new Date(case_.date).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm ${
-                        case_.status === 'Active' 
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          case_.status === "Active" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {case_.status}
                       </span>
                     </div>
@@ -341,7 +330,7 @@ function DashboardPage() {
               </div>
             )}
 
-            {activeTab === 'missing' && (
+            {activeTab === "missing" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Missing Cases</h3>
                 <div className="space-y-4">
@@ -368,7 +357,8 @@ function DashboardPage() {
         </div>
       </main>
     </div>
-  );
+  )
 }
 
-export default DashboardPage;
+export default DashboardPage
+
