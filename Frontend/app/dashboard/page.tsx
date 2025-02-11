@@ -60,6 +60,8 @@ function DashboardPage() {
                       src={userData.avatar}
                       alt={userData.fullname}
                       className="h-24 w-24 rounded-full object-cover"
+                      height={96}
+                      width={96}
                     />
                   </div>
                   <div className="ml-6">
@@ -92,7 +94,7 @@ function DashboardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col items-center md:items-start">
                       <div className="relative">
-                        <Image src={editedProfile.avatar} alt="Profile" className="h-24 w-24 rounded-full object-cover" />
+                        <Image src={editedProfile.avatar} alt="Profile" className="h-24 w-24 rounded-full object-cover" height={96} width={96} />
                         <label
                           htmlFor="avatar-upload"
                           className="absolute bottom-0 right-0 p-1 bg-indigo-600 rounded-full text-white cursor-pointer hover:bg-indigo-700"

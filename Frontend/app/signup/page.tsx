@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader } from "@/components/ui/loader"
 import { AlertTriangle } from "lucide-react"
+import { setUser } from "@/lib/slices/authSlice"
+import { set } from "date-fns"
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("")
@@ -23,14 +25,18 @@ export default function SignupPage() {
     setError("")
 
     try {
-      const response = await fetch("/api/signup", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password }),
+        body: JSON.stringify({ fullname:fullName, email, password }),
+        credentials: 'include',
       })
 
       if (response.ok) {
         // Assuming the token is set in cookies by the backend
+       const data= await response.json();
+        console.log(data.data);
+        setUser(data.data);
         router.push("/dashboard")
       } else {
         const data = await response.json()

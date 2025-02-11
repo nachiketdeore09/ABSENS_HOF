@@ -8,11 +8,13 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Menu, AlertTriangle } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
+import { Loader } from "@/components/ui/loader" // assuming you have a loader component
 
 export default function Navbar() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     // For example, assume the token is stored in localStorage under the key "token"
@@ -21,6 +23,11 @@ export default function Navbar() {
       setIsLoggedIn(true)
     }
   }, [])
+
+  // Reset loading state when the route changes
+  useEffect(() => {
+    setLoading(false)
+  }, [pathname])
 
   // Base routes always visible
   const routes = [
@@ -35,12 +42,17 @@ export default function Navbar() {
     routes.push({ href: "/dashboard", label: "Dashboard" })
   }
 
+  // Function to set loading true when a link is clicked
+  const handleLinkClick = () => {
+    setLoading(true)
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#004d40] px-8">
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-16 items-center relative">
         {/* Desktop Navigation */}
         <div className="mr-4 hidden md:flex flex-1">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+          <Link href="/" onClick={handleLinkClick} className="mr-6 flex items-center space-x-2">
             <AlertTriangle className="h-6 w-6 text-white" />
             <span className="text-xl font-bold text-white">ABSENS</span>
           </Link>
@@ -49,6 +61,7 @@ export default function Navbar() {
               <Link
                 key={route.href}
                 href={route.href}
+                onClick={handleLinkClick}
                 className={cn(
                   "transition-colors hover:text-white/80",
                   pathname === route.href ? "text-white" : "text-white/60"
@@ -69,7 +82,7 @@ export default function Navbar() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="bg-[#004d40] text-white border-r-0">
-            <Link href="/" className="flex items-center space-x-2 mb-8">
+            <Link href="/" onClick={() => { setOpen(false); handleLinkClick() }} className="flex items-center space-x-2 mb-8">
               <AlertTriangle className="h-6 w-6" />
               <span className="text-xl font-bold">ABSENS</span>
             </Link>
@@ -78,11 +91,11 @@ export default function Navbar() {
                 <Link
                   key={route.href}
                   href={route.href}
+                  onClick={() => { setOpen(false); handleLinkClick() }}
                   className={cn(
                     "text-lg font-medium transition-colors hover:text-white/80",
                     pathname === route.href ? "text-white" : "text-white/60"
                   )}
-                  onClick={() => setOpen(false)}
                 >
                   {route.label}
                 </Link>
@@ -91,16 +104,23 @@ export default function Navbar() {
           </SheetContent>
         </Sheet>
 
-        {/* Right Side: Register button or any additional controls */}
+        {/* Right Side: Register button or additional controls */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none"></div>
           {!isLoggedIn && (
             <Button variant="outline" className="mr-2 bg-[#004d40] text-white" asChild>
-              <Link href="/signup">Register</Link>
+              <Link href="/signup" onClick={handleLinkClick}>Register</Link>
             </Button>
           )}
           <ModeToggle />
         </div>
+
+        {/* Loader overlay */}
+        {loading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30">
+            <Loader size="lg" overlay={true} />
+          </div>
+        )}
       </div>
     </header>
   )

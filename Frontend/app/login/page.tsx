@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader } from "@/components/ui/loader"
 import { AlertTriangle } from "lucide-react"
+import { setUser } from "@/lib/slices/authSlice"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -22,14 +23,17 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: 'include',
       })
 
       if (response.ok) {
         // Assuming the token is set in cookies by the backend
+        const data = await response.json()
+        setUser(data.data);
         router.push("/dashboard")
       } else {
         const data = await response.json()

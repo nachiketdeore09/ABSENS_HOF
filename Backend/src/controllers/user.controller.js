@@ -30,59 +30,78 @@ const getUsers = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, 'Users found', users));
 });
 
-const registerUser = asyncHandler(async (req, res) => {
+const registerUser = async (req, res) => {
     // Destructure form data from req.body
-    const { username, password, email, fullname, gender } = req.body;
+    const { password, email, fullname, gender } = req.body;
     
     // Simple validation
-    if (!username || !password || !email) {
-        throw new ApiError(400, 'Username, password, and email are required');
+    if (!password || !email) {
+      throw new ApiError(400, 'Password and email are required');
     }
-
-    // Check for existing user
-    const existingUser = await User.findOne({ 
-        $or: [{ username }, { email }] 
-    });
-    if (existingUser) {
+  
+    try {
+    //   console.log("req.body", req.body);
+      // Check for existing user
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
         throw new ApiError(409, 'User already exists');
-    }
-
-    // Ensure gender value matches the schema's enum
-    const formattedGender = gender
+      }
+  
+      // Extract username from email (everything before the '@')
+      const extractedUsername = email.split('@')[0];
+  
+      // Ensure gender value matches the schema's enum
+      const formattedGender = gender
         ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
         : 'Others';
-
-    // Create new user
-    const user = await User.create({
-        username,
+  
+      // Create new user, using the extracted username
+      const user = await User.create({
+        username: extractedUsername,  // Use extracted username from email
         password,
         email,
         fullname: fullname || '',
         gender: formattedGender,
-    });
-    
-    // Prepare user data for response (omit sensitive info)
-    const userData = {
+      });
+      
+      if (!user) {
+        throw new Error('User creation returned null or undefined');
+      }
+  
+      // Prepare user data for response (omit sensitive info)
+      const userData = {
         _id: user._id,
         username: user.username,
         email: user.email,
+        gender:user.gender,
+        fullname: user.fullname,
         createdAt: user.createdAt,
-    };
-
-    // console.log(userData);
-
-    // Return a successful response
-    return ApiResponse.success(res, { 
+        avatar: user.avatar,
+      };
+  
+      // Return a successful response
+      return ApiResponse.success(res, { 
         statusCode: 201, 
         message: 'Registration successful', 
         data: userData 
       });
-});
+    } catch (error) {
+      return ApiResponse.error(res, { 
+        statusCode: 500, 
+        message: error.message, 
+        data: {} 
+      });
+    }
+  };
+  
 
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { username, password, email } = req.body;
+    const { password, email } = req.body;
     // console.log(req.body);
+
+    const extractedUsername = email.split('@')[0];
+    const username=extractedUsername;
 
     if (!username && !email) {
         throw new ApiError(400, 'Please provide a username or email');
@@ -94,13 +113,13 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({
         $or: [{ username }, { email }],
     });
-    console.log("user", user);
+    // console.log("user", user);
     if (!user) {
         throw new ApiError(404, 'User not found');
     }
     
     const isMatch = await user.isPasswordCorrect(password);
-    console.log("Password match:", isMatch);
+    // console.log("Password match:", isMatch);
     if (!isMatch) {
         throw new ApiError(401, 'Invalid credentials');
     }
@@ -115,7 +134,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Retrieve the user data without sensitive information
     const newUser = await User.findById(user._id).select('-password');
-    console.log("newUser", newUser);
+    // console.log("newUser", newUser);
     if (!newUser) {
         throw new ApiError(500, 'Error logging in user');
     }
