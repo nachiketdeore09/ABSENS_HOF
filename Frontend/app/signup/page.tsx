@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useDispatch } from "react-redux"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Loader } from "@/components/ui/loader"
 import { AlertTriangle } from "lucide-react"
 import { setUser } from "@/lib/slices/authSlice"
-import { set } from "date-fns"
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("")
@@ -18,6 +18,7 @@ export default function SignupPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const dispatch = useDispatch() // Add this
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,15 +29,16 @@ export default function SignupPage() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullname:fullName, email, password }),
-        credentials: 'include',
+        body: JSON.stringify({ fullname: fullName, email, password }),
+        credentials: "include",
       })
 
       if (response.ok) {
-        // Assuming the token is set in cookies by the backend
-       const data= await response.json();
-        console.log(data.data);
-        setUser(data.data);
+        const data = await response.json()
+        console.log(data.data)
+
+        dispatch(setUser(data.data.user)) // ✅ Correct Redux dispatch
+
         router.push("/dashboard")
       } else {
         const data = await response.json()
@@ -107,4 +109,3 @@ export default function SignupPage() {
     </div>
   )
 }
-

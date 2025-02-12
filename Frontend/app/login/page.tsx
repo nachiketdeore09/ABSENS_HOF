@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useDispatch } from "react-redux"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const dispatch = useDispatch() // ✅ Added Redux dispatch
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,13 +29,13 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: 'include',
+        credentials: "include",
       })
 
       if (response.ok) {
-        // Assuming the token is set in cookies by the backend
         const data = await response.json()
-        setUser(data.data);
+        dispatch(setUser(data.data.user)) // ✅ Properly dispatching setUser
+
         router.push("/dashboard")
       } else {
         const data = await response.json()
@@ -93,4 +95,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

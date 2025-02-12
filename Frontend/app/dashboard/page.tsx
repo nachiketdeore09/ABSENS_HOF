@@ -1,16 +1,27 @@
 "use client"
-import type React from "react"
-import { useState } from "react"
-import { FileText, Search, AlertTriangle, CheckCircle, MapPin, Calendar, X, Camera } from "lucide-react"
+
+import React, { useState, useEffect } from "react"
+import { useSelector } from "react-redux" // Assumes you're using Redux
+import {
+  FileText,
+  Search,
+  AlertTriangle,
+  CheckCircle,
+  MapPin,
+  Calendar,
+  X,
+  Camera,
+} from "lucide-react"
 import Image from "next/image"
 
-// Mock user data based on the schema
-const userData = {
+// Mock user data based on the schema (fallback data)
+const mockUserData = {
   username: "john_doe",
   email: "john.doe@example.com",
   fullname: "John Doe",
   gender: "Male",
-  avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+  avatar:
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
   reportedCases: [
     { id: 1, title: "Missing Person Case #1", status: "Active", date: "2024-03-15" },
     { id: 2, title: "Missing Person Case #2", status: "Resolved", date: "2024-03-10" },
@@ -22,23 +33,75 @@ const userData = {
 }
 
 function DashboardPage() {
+  // Retrieve authenticated user from Redux store
+  const loggedInUser = useSelector((state: { auth: { user: typeof mockUserData } }) => state.auth.user)
+  // Use loggedInUser if present; otherwise, fallback to mock data.
+  // console.log("loggedInUser", loggedInUser)
+  const currentUser = loggedInUser || mockUserData
+
+  // console.log("currentUser", currentUser);
+  // console.log("avatar", currentUser.avatar);
+
   const [activeTab, setActiveTab] = useState("overview")
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [editedProfile, setEditedProfile] = useState({
-    fullname: userData.fullname,
-    email: userData.email,
-    gender: userData.gender,
-    avatar: userData.avatar,
+    fullname: currentUser.fullname,
+    email: currentUser.email,
+    gender: currentUser.gender,
+    avatar: currentUser.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
   })
 
-  const handleProfileUpdate = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically make an API call to update the user profile
-    console.log("Profile update:", editedProfile)
-    setIsEditingProfile(false)
+  // When currentUser changes (e.g., after login), update the edited profile state
+  useEffect(() => {
+    setEditedProfile({
+      fullname: currentUser.fullname,
+      email: currentUser.email,
+      gender: currentUser.gender,
+      avatar: currentUser.avatar,
+    })
+  }, [currentUser])
+
+  interface UserProfile {
+    fullname: string;
+    email: string;
+    gender: string;
+    avatar: string;
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  interface Case {
+    id: number;
+    title: string;
+    date: string;
+  }
+
+  interface ReportedCase extends Case {
+    status: string;
+  }
+
+  interface MissingCase extends Case {
+    location: string;
+  }
+
+  interface User {
+    username: string;
+    email: string;
+    fullname: string;
+    gender: string;
+    avatar: string;
+    reportedCases: ReportedCase[];
+    missingCases: MissingCase[];
+  }
+
+  const handleProfileUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Here you would typically make an API call to update the user profile
+    // console.log("Profile update:", editedProfile);
+    setIsEditingProfile(false);
+  };
+
+  interface InputChangeEvent extends React.ChangeEvent<HTMLInputElement | HTMLSelectElement> {}
+
+  const handleInputChange = (e: InputChangeEvent) => {
     const { name, value } = e.target
     setEditedProfile((prev) => ({
       ...prev,
@@ -57,20 +120,22 @@ function DashboardPage() {
                 <div className="flex items-center">
                   <div className="relative">
                     <Image
-                      src={userData.avatar}
-                      alt={userData.fullname}
+                      src={currentUser.avatar}
+                      alt={currentUser.fullname}
                       className="h-24 w-24 rounded-full object-cover"
                       height={96}
                       width={96}
                     />
                   </div>
                   <div className="ml-6">
-                    <h2 className="text-2xl font-bold text-gray-900">{userData.fullname}</h2>
-                    <p className="text-gray-600">@{userData.username}</p>
-                    <p className="text-gray-600">{userData.email}</p>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {currentUser.fullname}
+                    </h2>
+                    <p className="text-gray-600">@{currentUser.username}</p>
+                    <p className="text-gray-600">{currentUser.email}</p>
                     <div className="mt-2 flex items-center">
                       <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                        {userData.gender}
+                        {currentUser.gender}
                       </span>
                     </div>
                   </div>
@@ -94,7 +159,13 @@ function DashboardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col items-center md:items-start">
                       <div className="relative">
-                        <Image src={editedProfile.avatar} alt="Profile" className="h-24 w-24 rounded-full object-cover" height={96} width={96} />
+                        <Image
+                          src={editedProfile.avatar}
+                          alt="Profile"
+                          className="h-24 w-24 rounded-full object-cover"
+                          height={96}
+                          width={96}
+                        />
                         <label
                           htmlFor="avatar-upload"
                           className="absolute bottom-0 right-0 p-1 bg-indigo-600 rounded-full text-white cursor-pointer hover:bg-indigo-700"
@@ -117,11 +188,16 @@ function DashboardPage() {
                           }}
                         />
                       </div>
-                      <p className="text-sm text-gray-500 mt-2">Click the camera icon to update your photo</p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Click the camera icon to update your photo
+                      </p>
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label htmlFor="fullname" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="fullname"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Full Name
                         </label>
                         <input
@@ -135,7 +211,10 @@ function DashboardPage() {
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Email
                         </label>
                         <input
@@ -149,7 +228,10 @@ function DashboardPage() {
                         />
                       </div>
                       <div>
-                        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="gender"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           Gender
                         </label>
                         <select
@@ -194,7 +276,9 @@ function DashboardPage() {
               <FileText className="h-8 w-8 text-blue-500" />
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Total Cases</p>
-                <p className="text-2xl font-bold">{userData.reportedCases.length + userData.missingCases.length}</p>
+                <p className="text-2xl font-bold">
+                  {(currentUser?.reportedCases?.length || 0) + (currentUser?.missingCases?.length || 0)}
+                </p>
               </div>
             </div>
           </div>
@@ -204,7 +288,7 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Active Cases</p>
                 <p className="text-2xl font-bold">
-                  {userData.reportedCases.filter((c) => c.status === "Active").length}
+                  {(currentUser?.reportedCases?.length) || 0}
                 </p>
               </div>
             </div>
@@ -215,7 +299,7 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Resolved Cases</p>
                 <p className="text-2xl font-bold">
-                  {userData.reportedCases.filter((c) => c.status === "Resolved").length}
+                  {(currentUser?.reportedCases?.filter((c) => c.status === "Resolved")?.length) || ""}
                 </p>
               </div>
             </div>
@@ -225,7 +309,7 @@ function DashboardPage() {
               <Search className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Missing Cases</p>
-                <p className="text-2xl font-bold">{userData.missingCases.length}</p>
+                <p className="text-2xl font-bold">{(currentUser?.missingCases?.length || 0)}</p>
               </div>
             </div>
           </div>
@@ -272,8 +356,8 @@ function DashboardPage() {
             {activeTab === "overview" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Recent Activity</h3>
-                <div className="space-y-4">
-                  {[...userData.reportedCases, ...userData.missingCases]
+                {/* <div className="space-y-4">
+                  {[...currentUser?.reportedCases, ...currentUser?.missingCases]
                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                     .slice(0, 5)
                     .map((case_, index) => (
@@ -286,7 +370,7 @@ function DashboardPage() {
                           )}
                         </div>
                         <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">{case_.title}</p>
+                          <p className="text-sm font-medium text-gray-900">{(case_?.title) || ""}</p>
                           <div className="flex items-center mt-1">
                             <Calendar className="h-4 w-4 text-gray-400" />
                             <span className="ml-2 text-sm text-gray-500">
@@ -295,14 +379,14 @@ function DashboardPage() {
                             {"location" in case_ && (
                               <>
                                 <MapPin className="h-4 w-4 text-gray-400 ml-4" />
-                                <span className="ml-2 text-sm text-gray-500">{case_.location}</span>
+                                <span className="ml-2 text-sm text-gray-500">{(case_?.location || "Unknown")}</span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
                     ))}
-                </div>
+                </div> */}
               </div>
             )}
 
@@ -310,18 +394,20 @@ function DashboardPage() {
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Reported Cases</h3>
                 <div className="space-y-4">
-                  {userData.reportedCases.map((case_, index) => (
+                  {currentUser.reportedCases.map((case_, index) => (
                     <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center">
                         <AlertTriangle className="h-6 w-6 text-yellow-500" />
                         <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">{case_.title}</p>
-                          <p className="text-sm text-gray-500">{new Date(case_.date).toLocaleDateString()}</p>
+                          <p className="text-sm font-medium text-gray-900">{(case_?.title) || ""}</p>
+                          <p className="text-sm text-gray-500">{(new Date(case_?.date).toLocaleDateString() || "")}</p>
                         </div>
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm ${
-                          case_.status === "Active" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+                          case_.status === "Active"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
                         }`}
                       >
                         {case_.status}
@@ -336,14 +422,14 @@ function DashboardPage() {
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Missing Cases</h3>
                 <div className="space-y-4">
-                  {userData.missingCases.map((case_, index) => (
+                  {currentUser.missingCases.map((case_, index) => (
                     <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
                       <Search className="h-6 w-6 text-purple-500" />
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-900">{case_.title}</p>
+                        <p className="text-sm font-medium text-gray-900">{(case_?.title || "") }</p>
                         <div className="flex items-center mt-1">
                           <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="ml-2 text-sm text-gray-500">{case_.location}</span>
+                          <span className="ml-2 text-sm text-gray-500">{(case_?.location || "")}</span>
                           <Calendar className="h-4 w-4 text-gray-400 ml-4" />
                           <span className="ml-2 text-sm text-gray-500">
                             {new Date(case_.date).toLocaleDateString()}
@@ -363,4 +449,3 @@ function DashboardPage() {
 }
 
 export default DashboardPage
-

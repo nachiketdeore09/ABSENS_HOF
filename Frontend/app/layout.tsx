@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Suspense } from "react"
 import { Loader } from "@/components/ui/loader"
 import type React from "react" // Added import for React
+import { ClientProviders } from "@/components/ClientProviders"; // Ensure correct path
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,16 +31,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <Suspense fallback={<Loader size="lg" />}>
-              <main className="flex-1">{children}</main>
-            </Suspense>
-            <Footer />
-          </div>
+          {/* Wrap the content that needs Redux with ClientProviders */}
+          <ClientProviders>
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <Suspense fallback={<Loader size="lg" />}>
+                <main className="flex-1">{children}</main>
+              </Suspense>
+              <Footer />
+            </div>
+          </ClientProviders>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-
