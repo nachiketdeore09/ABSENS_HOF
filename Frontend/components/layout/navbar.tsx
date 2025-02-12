@@ -1,50 +1,53 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Menu, AlertTriangle } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useState, useEffect } from "react"
-import { Loader } from "@/components/ui/loader" // assuming you have a loader component
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Menu, AlertTriangle } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Loader } from "@/components/ui/loader";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/lib/slices/authSlice";
 
 export default function Navbar() {
-  const pathname = usePathname()
-  const [open, setOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // For example, assume the token is stored in localStorage under the key "token"
-    const token = localStorage.getItem("token")
-    if (token) {
-      setIsLoggedIn(true)
-    }
-  }, [])
+  // Use the global auth state instead of local state.
+  const user = useSelector((state: { auth: { user: any } }) => state.auth.user);
+  const isLoggedIn = Boolean(user);
 
   // Reset loading state when the route changes
   useEffect(() => {
-    setLoading(false)
-  }, [pathname])
+    setLoading(false);
+  }, [pathname]);
 
-  // Base routes always visible
+  const handleLinkClick = () => {
+    setLoading(true);
+  };
+
+  // Handle logout by dispatching the logout action and then redirecting.
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/");
+  };
+
+  // Base routes always visible.
   const routes = [
     { href: "/", label: "Home" },
     { href: "/report", label: "Report Missing" },
     { href: "/search", label: "Search" },
     { href: "/alerts", label: "Alerts" },
-  ]
+  ];
 
-  // Conditionally add the dashboard link if the user is logged in
+  // Add the dashboard route if the user is logged in.
   if (isLoggedIn) {
-    routes.push({ href: "/dashboard", label: "Dashboard" })
-  }
-
-  // Function to set loading true when a link is clicked
-  const handleLinkClick = () => {
-    setLoading(true)
+    routes.push({ href: "/dashboard", label: "Dashboard" });
   }
 
   return (
@@ -62,17 +65,16 @@ export default function Navbar() {
                 key={route.href}
                 href={route.href}
                 onClick={handleLinkClick}
-                className={cn(
-                  "transition-colors hover:text-white/80",
+                className={`transition-colors hover:text-white/80 ${
                   pathname === route.href ? "text-white" : "text-white/60"
-                )}
+                }`}
               >
                 {route.label}
               </Link>
             ))}
           </nav>
         </div>
-        
+
         {/* Mobile Navigation using a Sheet */}
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild className="md:hidden">
@@ -82,7 +84,14 @@ export default function Navbar() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="bg-[#004d40] text-white border-r-0">
-            <Link href="/" onClick={() => { setOpen(false); handleLinkClick() }} className="flex items-center space-x-2 mb-8">
+            <Link
+              href="/"
+              onClick={() => {
+                setOpen(false);
+                handleLinkClick();
+              }}
+              className="flex items-center space-x-2 mb-8"
+            >
               <AlertTriangle className="h-6 w-6" />
               <span className="text-xl font-bold">ABSENS</span>
             </Link>
@@ -91,11 +100,13 @@ export default function Navbar() {
                 <Link
                   key={route.href}
                   href={route.href}
-                  onClick={() => { setOpen(false); handleLinkClick() }}
-                  className={cn(
-                    "text-lg font-medium transition-colors hover:text-white/80",
+                  onClick={() => {
+                    setOpen(false);
+                    handleLinkClick();
+                  }}
+                  className={`text-lg font-medium transition-colors hover:text-white/80 ${
                     pathname === route.href ? "text-white" : "text-white/60"
-                  )}
+                  }`}
                 >
                   {route.label}
                 </Link>
@@ -104,12 +115,18 @@ export default function Navbar() {
           </SheetContent>
         </Sheet>
 
-        {/* Right Side: Register button or additional controls */}
+        {/* Right Side: Register or Logout button, plus ModeToggle */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none"></div>
-          {!isLoggedIn && (
+          {isLoggedIn ? (
+            <Button variant="outline" className="mr-2 bg-red-500 text-white" onClick={handleLogout}>
+              Logout
+            </Button>
+          ) : (
             <Button variant="outline" className="mr-2 bg-[#004d40] text-white" asChild>
-              <Link href="/signup" onClick={handleLinkClick}>Register</Link>
+              <Link href="/signup" onClick={handleLinkClick}>
+                Register
+              </Link>
             </Button>
           )}
           <ModeToggle />
@@ -123,5 +140,5 @@ export default function Navbar() {
         )}
       </div>
     </header>
-  )
+  );
 }

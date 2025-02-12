@@ -22,7 +22,6 @@ const generateAccessAndRefreshToken = async (userId) => {
 };
 
 const getUsers = asyncHandler(async (req, res) => {
-    
     const users = await User.find().select('-password -refreshToken');
     if (!users) {
         throw new ApiError(404, 'No users found');
@@ -33,75 +32,80 @@ const getUsers = asyncHandler(async (req, res) => {
 const registerUser = async (req, res) => {
     // Destructure form data from req.body
     const { password, email, fullname, gender } = req.body;
-    
+
     // Simple validation
     if (!password || !email) {
-      throw new ApiError(400, 'Password and email are required');
+        throw new ApiError(400, 'Password and email are required');
     }
-  
-    try {
-    //   console.log("req.body", req.body);
-      // Check for existing user
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        throw new ApiError(409, 'User already exists');
-      }
-  
-      // Extract username from email (everything before the '@')
-      const extractedUsername = email.split('@')[0];
-  
-      // Ensure gender value matches the schema's enum
-      const formattedGender = gender
-        ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
-        : 'Others';
-  
-      // Create new user, using the extracted username
-      const user = await User.create({
-        username: extractedUsername,  // Use extracted username from email
-        password,
-        email,
-        fullname: fullname || '',
-        gender: formattedGender,
-      });
-      
-      if (!user) {
-        throw new Error('User creation returned null or undefined');
-      }
-  
-      // Prepare user data for response (omit sensitive info)
-      const userData = {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        gender:user.gender,
-        fullname: user.fullname,
-        createdAt: user.createdAt,
-        avatar: user.avatar,
-      };
-  
-      // Return a successful response
-      return ApiResponse.success(res, { 
-        statusCode: 201, 
-        message: 'Registration successful', 
-        data: userData 
-      });
-    } catch (error) {
-      return ApiResponse.error(res, { 
-        statusCode: 500, 
-        message: error.message, 
-        data: {} 
-      });
-    }
-  };
-  
 
+    try {
+        // Check for existing user
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            throw new ApiError(409, 'User already exists');
+        }
+
+        // Extract username from email (everything before the '@')
+        const extractedUsername = email.split('@')[0];
+
+        // Ensure gender value matches the schema's enum
+        const formattedGender = gender
+            ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
+            : 'Others';
+
+        // Create new user, using the extracted username
+        const user = await User.create({
+            username: extractedUsername, // Use extracted username from email
+            password,
+            email,
+            fullname: fullname || '',
+            gender: formattedGender,
+        });
+
+        if (!user) {
+            throw new Error('User creation returned null or undefined');
+        }
+
+        // Generate tokens using the helper function
+        const { accessToken, refreshToken } =
+            await generateAccessAndRefreshToken(user._id);
+
+        // Prepare user data for response (omit sensitive info)
+        const userData = {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            gender: user.gender,
+            fullname: user.fullname,
+            createdAt: user.createdAt,
+            avatar: user.avatar,
+        };
+
+        // Return a successful response including tokens
+        return ApiResponse.success(res, {
+            statusCode: 201,
+            message: 'Registration successful',
+            data: {
+                user: userData,
+                accessToken,
+                refreshToken,
+            },
+        });
+    } catch (error) {
+        return ApiResponse.error(res, {
+            statusCode: 500,
+            message: error.message,
+            data: {},
+        });
+    }
+};
 
 const loginUser = asyncHandler(async (req, res) => {
     const { password, email } = req.body;
     // console.log(req.body);
 
     const extractedUsername = email.split('@')[0];
-    const username=extractedUsername;
+    const username = extractedUsername;
 
     if (!username && !email) {
         throw new ApiError(400, 'Please provide a username or email');
@@ -117,15 +121,17 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!user) {
         throw new ApiError(404, 'User not found');
     }
-    
+
     const isMatch = await user.isPasswordCorrect(password);
     // console.log("Password match:", isMatch);
     if (!isMatch) {
         throw new ApiError(401, 'Invalid credentials');
     }
-    
+
     // Generate tokens
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+        user._id,
+    );
     // console.log("Access Token:", accessToken, "Refresh Token:", refreshToken);
 
     // Save the refresh token on the user model
@@ -146,20 +152,76 @@ const loginUser = asyncHandler(async (req, res) => {
     };
 
     // Set cookies and return the response using the ApiResponse.success static method
-    res
-        .cookie('refreshToken', refreshToken, options)
-        .cookie('accessToken', accessToken, options);
-    
-    return ApiResponse.success(res, { 
-        statusCode: 200, 
-        message: 'User logged in successfully', 
-        data: { user: newUser, accessToken, refreshToken } 
+    res.cookie('refreshToken', refreshToken, options).cookie(
+        'accessToken',
+        accessToken,
+        options,
+    );
+
+    return ApiResponse.success(res, {
+        statusCode: 200,
+        message: 'User logged in successfully',
+        data: { user: newUser, accessToken, refreshToken },
     });
 });
 
+import jwt from 'jsonwebtoken';
+
+const refreshToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+//   console.log('refreshToken', req.body);
+
+  if (!refreshToken) {
+    throw new ApiError(401, 'Unauthorized');
+  }
+
+  // Verify the refresh token
+  let decoded;
+  try {
+    decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch (err) {
+    // If verification fails, the refresh token is expired or invalid.
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    throw new ApiError(401, 'Session expired. Please log in again.');
+  }
+
+  // Find the user associated with the provided refresh token.
+  // (Alternatively, you might use decoded._id if your token payload includes the user id.)
+  const user = await User.findOne({ refreshToken });
+  if (!user) {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    throw new ApiError(401, 'Session expired. Please log in again.');
+  }
+
+  // Generate a new access token only
+  const newAccessToken = await user.generateAccessToken();
+
+  // Set the new access token as a cookie.
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  };
+  res.cookie('accessToken', newAccessToken, options);
+
+  // Retrieve the updated user data (without sensitive info)
+  const newUser = await User.findById(user._id).select('-password');
+  if (!newUser) {
+    throw new ApiError(500, 'Error refreshing token');
+  }
+
+  return ApiResponse.success(res, {
+    statusCode: 200,
+    message: 'Token refreshed successfully',
+    data: { user: newUser, accessToken: newAccessToken },
+  });
+});
+
+
 const logOutUser = asyncHandler(async (req, res) => {
     // console.log(req.user);
-    if(!req.user){
+    if (!req.user) {
         throw new ApiError(401, 'Unauthorized');
     }
     await User.findByIdAndUpdate(
@@ -189,9 +251,4 @@ const logOutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, {}, 'User logged out successfully'));
 });
 
-export {
-    getUsers,
-    registerUser,
-    loginUser,
-    logOutUser,
-};
+export { getUsers, registerUser, loginUser, logOutUser, refreshToken };

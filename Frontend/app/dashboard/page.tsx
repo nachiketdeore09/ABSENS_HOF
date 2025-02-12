@@ -33,6 +33,7 @@ const mockUserData = {
 }
 
 function DashboardPage() {
+  // useAuth()
   // Retrieve authenticated user from Redux store
   const loggedInUser = useSelector((state: { auth: { user: typeof mockUserData } }) => state.auth.user)
   // Use loggedInUser if present; otherwise, fallback to mock data.
