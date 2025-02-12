@@ -24,7 +24,7 @@ const routes = [
   },
   {
     href: "/search",
-    label: "Search",
+    label: "Find Missing",
   },
   {
     href: "/alerts",
