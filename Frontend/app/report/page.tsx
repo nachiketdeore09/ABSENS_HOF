@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, Camera } from "lucide-react";
+import Image from "next/image";
 
 export default function ReportPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -85,10 +86,12 @@ export default function ReportPage() {
                       className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50"
                     >
                       {previewUrl ? (
-                        <img
+                        <Image
                           src={previewUrl}
                           alt="Preview"
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-160 h-160 object-cover rounded-lg"
+                          height={160}
+                          width={160}
                         />
                       ) : (
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
