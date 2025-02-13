@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 import numpy as np  
 from fastapi.middleware.cors import CORSMiddleware
-from service.feature_extractor import generate_embeddings
+from embedder import generate_embeddings
 import uuid
 from dotenv import load_dotenv
 import os
@@ -100,14 +100,17 @@ async def find_missing_child(image: UploadFile = File(...)):
     embedding = await generate_embeddings(image)
 
     # Query Pinecone for similar embeddings in 'reported' namespace
-    search_results = index.query(vector=embedding.tolist(), top_k=1, namespace="reported", include_metadata=True)
+    search_results = index.query(vector=embedding, top_k=1, namespace="reported", include_metadata=True)
 
     if search_results["matches"]:
-        user_id = search_results["matches"][0]["id"]
-        return {"message": "Child found", "user_id": user_id}
+        match = search_results["matches"][0]
+        # Check if similarity score is above threshold (0.8 for high confidence)
+        if match["score"] > 0.8:
+            user_id = match["id"]
+            return {"message": "Child found", "user_id": user_id, "similarity_score": match["score"]}
     
-    # If no match found, store embedding in 'unconfirmed' namespace
-    index.upsert([(str(uuid.uuid4()), embedding.tolist())], namespace="unconfirmed")
+    # If no match found or similarity below threshold, store embedding in 'unconfirmed' namespace
+    index.upsert([(str(uuid.uuid4()), embedding)], namespace="unconfirmed")
     return {"message": "No match found, stored for future cases"}
    
    
