@@ -37,7 +37,9 @@ export default function SignupPage() {
         const data = await response.json()
         console.log(data.data)
 
-        dispatch(setUser(data.data)) // ✅ Correct Redux dispatch
+        dispatch(setUser(data.data.user)); // ✅ Correct Redux dispatch
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
 
         router.push("/dashboard")
       } else {
