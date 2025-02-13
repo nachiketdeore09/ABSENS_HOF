@@ -13,7 +13,7 @@ const router = express.Router();
 // POST /api/v1/missing-persons
 router.post(
     '/',
-    verifyToken,
+    // verifyToken,
     //   authorize('authority', 'admin'),
       upload.array('photos', 5), // Handle multiple images (max 5)
     createMissingPerson,

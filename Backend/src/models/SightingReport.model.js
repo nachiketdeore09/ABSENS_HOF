@@ -31,7 +31,7 @@ const sightingReportSchema = new mongoose.Schema({
     },
     timestamp: {
         type: Date,
-        required: true,
+        // required: true,
     },
     createdAt: {
         type: Date,

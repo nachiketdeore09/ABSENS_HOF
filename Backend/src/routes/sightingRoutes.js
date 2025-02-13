@@ -12,7 +12,7 @@ const router = express.Router();
 
 // POST /api/v1/sightings
 router.post(
-  '/',
+  '/',  
   verifyToken,
   upload.array('photos', 5),
   createSightingReport
