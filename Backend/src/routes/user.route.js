@@ -4,6 +4,7 @@ import {
     registerUser,
     loginUser,
     logOutUser,
+    refreshToken,
 } from '../controllers/user.controller.js';
 // import { upload } from '../middlewares/multer.middleware.js';
 import { verifyToken } from '../middlewares/auth.middleware.js';
@@ -22,6 +23,8 @@ router
 router.route('/login').post(loginUser);
 
 router.route('/logout').post(verifyToken, logOutUser);
+
+router.route("/refresh_token").post(refreshToken);
 
 router.route('/isAuthenticated').get(verifyToken, (req, res) => {
     if(!req.user) {

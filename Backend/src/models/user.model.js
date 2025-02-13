@@ -11,6 +11,7 @@ const userSchema = mongoose.Schema(
             lowercase: true,
             trim: true,
             index: true,
+            default: '',
         },
         password: {
             type: String,
@@ -35,7 +36,7 @@ const userSchema = mongoose.Schema(
         },
         avatar: {
             type: String,
-            default: '',
+            default: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80',
         },
         // Array of reported cases (SightingReport)
         reportedCases: [
