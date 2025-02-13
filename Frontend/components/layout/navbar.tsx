@@ -6,10 +6,35 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Menu, AlertTriangle } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Loader } from "@/components/ui/loader";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/lib/slices/authSlice";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useState } from "react";
+
+const routes = [
+  {
+    href: "/",
+    label: "Home",
+  },
+  {
+    href: "/report",
+    label: "Report Missing",
+  },
+  {
+    href: "/search",
+    label: "Find Missing",
+  },
+  {
+    href: "/alerts",
+    label: "Alerts",
+  },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+  }
+];
 
 export default function Navbar() {
   const pathname = usePathname();
