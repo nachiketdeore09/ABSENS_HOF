@@ -5,14 +5,14 @@ import {
   getSightingReports,
   getSightingReportById,
   updateSightingStatus
-} from '../controllers/sightingController.js';
+} from '../controllers/reportMissing.js';
 import upload from '../middlewares/upload.js';
 
 const router = express.Router();
 
 // POST /api/v1/sightings
 router.post(
-  '/',
+  '/',  
   verifyToken,
   upload.array('photos', 5),
   createSightingReport

@@ -12,9 +12,9 @@ export default function Home() {
         <div className="container relative">
           <div className="flex flex-col items-center text-center">
             <div className="mb-8">
-              <Image 
-                src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
-                alt="Government of India Seal" 
+              <Image
+                src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg"
+                alt="Government of India Seal"
                 className="h-24 md:h-32"
                 width={128}
                 height={128}

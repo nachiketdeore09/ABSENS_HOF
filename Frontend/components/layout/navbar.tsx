@@ -4,12 +4,36 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useDispatch, useSelector } from "react-redux";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Menu, AlertTriangle } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 import { Loader } from "@/components/ui/loader";
-import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/lib/slices/authSlice";
+
+const routes = [
+  {
+    href: "/",
+    label: "Home",
+  },
+  {
+    href: "/report",
+    label: "Report Missing",
+  },
+  {
+    href: "/search",
+    label: "Find Missing",
+  },
+  {
+    href: "/alerts",
+    label: "Alerts",
+  },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+  },
+];
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -40,8 +64,8 @@ export default function Navbar() {
   // Base routes always visible.
   const routes = [
     { href: "/", label: "Home" },
+    { href: "/find", label: "Find Missing" },
     { href: "/report", label: "Report Missing" },
-    { href: "/search", label: "Search" },
     { href: "/alerts", label: "Alerts" },
   ];
 
@@ -55,7 +79,11 @@ export default function Navbar() {
       <div className="container flex h-16 items-center relative">
         {/* Desktop Navigation */}
         <div className="mr-4 hidden md:flex flex-1">
-          <Link href="/" onClick={handleLinkClick} className="mr-6 flex items-center space-x-2">
+          <Link
+            href="/"
+            onClick={handleLinkClick}
+            className="mr-6 flex items-center space-x-2"
+          >
             <AlertTriangle className="h-6 w-6 text-white" />
             <span className="text-xl font-bold text-white">ABSENS</span>
           </Link>
@@ -83,7 +111,10 @@ export default function Navbar() {
               <span className="sr-only">Toggle Menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="bg-[#004d40] text-white border-r-0">
+          <SheetContent
+            side="left"
+            className="bg-[#004d40] text-white border-r-0"
+          >
             <Link
               href="/"
               onClick={() => {
@@ -119,11 +150,19 @@ export default function Navbar() {
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none"></div>
           {isLoggedIn ? (
-            <Button variant="outline" className="mr-2 bg-red-500 text-white" onClick={handleLogout}>
+            <Button
+              variant="outline"
+              className="mr-2 bg-red-500 text-white"
+              onClick={handleLogout}
+            >
               Logout
             </Button>
           ) : (
-            <Button variant="outline" className="mr-2 bg-[#004d40] text-white" asChild>
+            <Button
+              variant="outline"
+              className="mr-2 bg-[#004d40] text-white"
+              asChild
+            >
               <Link href="/signup" onClick={handleLinkClick}>
                 Register
               </Link>

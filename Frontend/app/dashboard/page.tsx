@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { useSelector } from "react-redux" // Assumes you're using Redux
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useSelector } from "react-redux";
 import {
   FileText,
   Search,
@@ -11,104 +11,145 @@ import {
   Calendar,
   X,
   Camera,
-} from "lucide-react"
-import Image from "next/image"
+} from "lucide-react";
+import Image from "next/image";
 
-// Mock user data based on the schema (fallback data)
-const mockUserData = {
-  username: "john_doe",
-  email: "john.doe@example.com",
-  fullname: "John Doe",
-  gender: "Male",
-  avatar:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
-  reportedCases: [
-    { id: 1, title: "Missing Person Case #1", status: "Active", date: "2024-03-15" },
-    { id: 2, title: "Missing Person Case #2", status: "Resolved", date: "2024-03-10" },
-  ],
-  missingCases: [
-    { id: 1, title: "Search Case #1", location: "Mumbai", date: "2024-03-12" },
-    { id: 2, title: "Search Case #2", location: "Delhi", date: "2024-03-08" },
-  ],
+// Define interfaces for reported and missing cases based on your data structure
+interface ReportedCase {
+  _id: string;
+  name: string;
+  location: string;
+  status: string;
+  createdAt: string;
+  description: string;
+  photos: string[];
 }
 
-function DashboardPage() {
-  // useAuth()
-  // Retrieve authenticated user from Redux store
-  const loggedInUser = useSelector((state: { auth: { user: typeof mockUserData } }) => state.auth.user)
-  // Use loggedInUser if present; otherwise, fallback to mock data.
-  // console.log("loggedInUser", loggedInUser)
-  const currentUser = loggedInUser || mockUserData
+interface MissingCase {
+  _id: string;
+  name: string;
+  age: number;
+  gender: string;
+  createdAt: string;
+  missingDate: string;
+  description: string;
+  lastSeenLocation: string;
+  photos: string[];
+  status: string;
+}
 
-  // console.log("currentUser", currentUser);
-  // console.log("avatar", currentUser.avatar);
+// Define interface for the User object
+interface User {
+  username: string;
+  email: string;
+  fullname: string;
+  gender: string;
+  avatar: string;
+  createdAt: string;
+  reportedCases: ReportedCase[];
+  missingCases: MissingCase[];
+}
 
-  const [activeTab, setActiveTab] = useState("overview")
-  const [isEditingProfile, setIsEditingProfile] = useState(false)
-  const [editedProfile, setEditedProfile] = useState({
+// Create a fallback/mock user data object that matches the User interface
+const mockUserData: User = {
+  username: "manu",
+  email: "manu@gmail.com",
+  fullname: "manish",
+  gender: "Others",
+  avatar: "",
+  createdAt: "2025-02-11T23:21:17.868Z",
+  reportedCases: [
+    {
+      _id: "67af50f1e89e03bf4c10f4d4",
+      name: "Unknown",
+      location: "Lucknow",
+      status: "pending",
+      createdAt: "2025-02-14T14:19:29.688Z",
+      description: "sldkvjhbsjkanhj",
+      photos: [
+        "https://res.cloudinary.com/dlhgzwwdx/image/upload/v1739542768/Absens_HOF/x6oe6q54wgfhofgpeigj.jpg",
+      ],
+    },
+  ],
+  missingCases: [
+    {
+      _id: "67af51a1e89e03bf4c10f4d9",
+      name: "Manish Kumar",
+      age: 18,
+      gender: "Male",
+      createdAt: "2025-02-14T14:22:25.224Z",
+      missingDate: "2025-02-06T00:00:00.000Z",
+      description: "No description provided",
+      lastSeenLocation: "Lucknow",
+      photos: [
+        "https://res.cloudinary.com/dlhgzwwdx/image/upload/v1739542944/Absens_HOF/hn7tnhhpeurssuhmwjgk.jpg",
+      ],
+      status: "missing",
+    },
+  ],
+};
+
+// Define the shape of your Redux state (adjust as needed)
+interface RootState {
+  auth: {
+    user: User | null;
+  };
+}
+
+// Define an interface for the editable profile portion of the user
+interface UserProfile {
+  fullname: string;
+  email: string;
+  gender: string;
+  avatar: string;
+}
+
+const DashboardPage: React.FC = () => {
+  // Retrieve authenticated user from Redux store; fallback to mockUserData if not available
+  const loggedInUser = useSelector((state: RootState) => state.auth.user);
+  const currentUser: User = loggedInUser || mockUserData;
+
+  // Local state for active tab and profile editing
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>({
     fullname: currentUser.fullname,
     email: currentUser.email,
     gender: currentUser.gender,
-    avatar: currentUser.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
-  })
+    avatar:
+      currentUser.avatar ||
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+  });
 
-  // When currentUser changes (e.g., after login), update the edited profile state
   useEffect(() => {
     setEditedProfile({
       fullname: currentUser.fullname,
       email: currentUser.email,
       gender: currentUser.gender,
-      avatar: currentUser.avatar,
-    })
-  }, [currentUser])
+      avatar:
+        currentUser.avatar ||
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80",
+    });
+  }, [currentUser]);
 
-  interface UserProfile {
-    fullname: string;
-    email: string;
-    gender: string;
-    avatar: string;
-  }
-
-  interface Case {
-    id: number;
-    title: string;
-    date: string;
-  }
-
-  interface ReportedCase extends Case {
-    status: string;
-  }
-
-  interface MissingCase extends Case {
-    location: string;
-  }
-
-  interface User {
-    username: string;
-    email: string;
-    fullname: string;
-    gender: string;
-    avatar: string;
-    reportedCases: ReportedCase[];
-    missingCases: MissingCase[];
-  }
-
-  const handleProfileUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handler for updating the profile
+  const handleProfileUpdate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Here you would typically make an API call to update the user profile
-    // console.log("Profile update:", editedProfile);
+    // Typically, make an API call here to update the user profile
+    console.log("Updated profile:", editedProfile);
     setIsEditingProfile(false);
   };
 
-  interface InputChangeEvent extends React.ChangeEvent<HTMLInputElement | HTMLSelectElement> {}
-
-  const handleInputChange = (e: InputChangeEvent) => {
-    const { name, value } = e.target
+  // Handler for input changes in the profile form
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
     setEditedProfile((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -121,7 +162,10 @@ function DashboardPage() {
                 <div className="flex items-center">
                   <div className="relative">
                     <Image
-                      src={currentUser.avatar}
+                      src={
+                        currentUser.avatar ||
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80"
+                      }
                       alt={currentUser.fullname}
                       className="h-24 w-24 rounded-full object-cover"
                       height={96}
@@ -139,6 +183,10 @@ function DashboardPage() {
                         {currentUser.gender}
                       </span>
                     </div>
+                    <p className="text-gray-500 text-sm mt-1">
+                      Member since:{" "}
+                      {new Date(currentUser.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -161,7 +209,10 @@ function DashboardPage() {
                     <div className="flex flex-col items-center md:items-start">
                       <div className="relative">
                         <Image
-                          src={editedProfile.avatar}
+                          src={
+                            editedProfile.avatar ||
+                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&q=80"
+                          }
                           alt="Profile"
                           className="h-24 w-24 rounded-full object-cover"
                           height={96}
@@ -178,13 +229,11 @@ function DashboardPage() {
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          onChange={(e) => {
-                            // Handle image upload
-                            const file = e.target.files?.[0]
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                            const file = e.target.files?.[0];
                             if (file) {
-                              // Here you would typically upload the image to your server
-                              // and get back a URL
-                              console.log("File selected:", file)
+                              // Handle image upload here (e.g., call your API)
+                              console.log("File selected:", file);
                             }
                           }}
                         />
@@ -278,7 +327,8 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Total Cases</p>
                 <p className="text-2xl font-bold">
-                  {(currentUser?.reportedCases?.length || 0) + (currentUser?.missingCases?.length || 0)}
+                  {currentUser.reportedCases.length +
+                    currentUser.missingCases.length}
                 </p>
               </div>
             </div>
@@ -289,7 +339,11 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Active Cases</p>
                 <p className="text-2xl font-bold">
-                  {(currentUser?.reportedCases?.length) || 0}
+                  {
+                    currentUser.reportedCases.filter(
+                      (c) => c.status.toLowerCase() === "pending"
+                    ).length
+                  }
                 </p>
               </div>
             </div>
@@ -300,7 +354,11 @@ function DashboardPage() {
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Resolved Cases</p>
                 <p className="text-2xl font-bold">
-                  {(currentUser?.reportedCases?.filter((c) => c.status === "Resolved")?.length) || ""}
+                  {
+                    currentUser.reportedCases.filter(
+                      (c) => c.status.toLowerCase() === "resolved"
+                    ).length
+                  }
                 </p>
               </div>
             </div>
@@ -310,7 +368,9 @@ function DashboardPage() {
               <Search className="h-8 w-8 text-purple-500" />
               <div className="ml-4">
                 <p className="text-sm text-gray-600">Missing Cases</p>
-                <p className="text-2xl font-bold">{(currentUser?.missingCases?.length || 0)}</p>
+                <p className="text-2xl font-bold">
+                  {currentUser.missingCases.length}
+                </p>
               </div>
             </div>
           </div>
@@ -357,37 +417,7 @@ function DashboardPage() {
             {activeTab === "overview" && (
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Recent Activity</h3>
-                {/* <div className="space-y-4">
-                  {[...currentUser?.reportedCases, ...currentUser?.missingCases]
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                    .slice(0, 5)
-                    .map((case_, index) => (
-                      <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
-                        <div className="flex-shrink-0">
-                          {"status" in case_ ? (
-                            <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                          ) : (
-                            <Search className="h-6 w-6 text-purple-500" />
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">{(case_?.title) || ""}</p>
-                          <div className="flex items-center mt-1">
-                            <Calendar className="h-4 w-4 text-gray-400" />
-                            <span className="ml-2 text-sm text-gray-500">
-                              {new Date(case_.date).toLocaleDateString()}
-                            </span>
-                            {"location" in case_ && (
-                              <>
-                                <MapPin className="h-4 w-4 text-gray-400 ml-4" />
-                                <span className="ml-2 text-sm text-gray-500">{(case_?.location || "Unknown")}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div> */}
+                {/* Optionally, combine both reported and missing cases for recent activity */}
               </div>
             )}
 
@@ -395,24 +425,53 @@ function DashboardPage() {
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Reported Cases</h3>
                 <div className="space-y-4">
-                  {currentUser.reportedCases.map((case_, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">{(case_?.title) || ""}</p>
-                          <p className="text-sm text-gray-500">{(new Date(case_?.date).toLocaleDateString() || "")}</p>
+                  {currentUser.reportedCases.map((caseItem) => (
+                    <div
+                      key={caseItem._id}
+                      className="p-4 bg-gray-50 rounded-lg shadow"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                          <p className="text-sm font-medium text-gray-900">
+                            {caseItem.name}
+                          </p>
                         </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm ${
+                            caseItem.status.toLowerCase() === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {caseItem.status}
+                        </span>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          case_.status === "Active"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
-                      >
-                        {case_.status}
-                      </span>
+                      <p className="text-sm text-gray-500">
+                        Reported on:{" "}
+                        {new Date(caseItem.createdAt).toLocaleDateString()}
+                      </p>
+                      <p className="mt-2 text-gray-700">
+                        {caseItem.description}
+                      </p>
+                      <p className="mt-2 text-gray-600">
+                        <strong>Location: </strong>
+                        {caseItem.location}
+                      </p>
+                      {caseItem.photos.length > 0 && (
+                        <div className="mt-2 flex space-x-2">
+                          {caseItem.photos.map((photo, index) => (
+                            <Image
+                              key={index}
+                              src={photo}
+                              alt={`Photo ${index + 1}`}
+                              className="h-16 w-16 rounded object-cover"
+                              height={64}
+                              width={64}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -423,20 +482,55 @@ function DashboardPage() {
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Missing Cases</h3>
                 <div className="space-y-4">
-                  {currentUser.missingCases.map((case_, index) => (
-                    <div key={index} className="flex items-center p-4 bg-gray-50 rounded-lg">
-                      <Search className="h-6 w-6 text-purple-500" />
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-900">{(case_?.title || "") }</p>
-                        <div className="flex items-center mt-1">
-                          <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="ml-2 text-sm text-gray-500">{(case_?.location || "")}</span>
-                          <Calendar className="h-4 w-4 text-gray-400 ml-4" />
-                          <span className="ml-2 text-sm text-gray-500">
-                            {new Date(case_.date).toLocaleDateString()}
-                          </span>
+                  {currentUser.missingCases.map((caseItem) => (
+                    <div
+                      key={caseItem._id}
+                      className="p-4 bg-gray-50 rounded-lg shadow"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                          <Search className="h-6 w-6 text-purple-500" />
+                          <p className="text-sm font-medium text-gray-900">
+                            {caseItem.name}
+                          </p>
                         </div>
+                        <span className="px-3 py-1 rounded-full text-sm bg-red-100 text-red-800">
+                          {caseItem.status}
+                        </span>
                       </div>
+                      <p className="text-sm text-gray-500">
+                        Missing Date:{" "}
+                        {new Date(caseItem.missingDate).toLocaleDateString()}
+                      </p>
+                      <p className="mt-2 text-gray-700">
+                        {caseItem.description}
+                      </p>
+                      <p className="mt-2 text-gray-600">
+                        <strong>Last Seen: </strong>
+                        {caseItem.lastSeenLocation}
+                      </p>
+                      <p className="mt-2 text-gray-600">
+                        <strong>Age: </strong>
+                        {caseItem.age}
+                      </p>
+                      <p className="mt-2 text-gray-600">
+                        <strong>Gender: </strong>
+                        {caseItem.gender}
+                      </p>
+                      {caseItem.photos.length > 0 && (
+                        <div className="mt-2 flex space-x-2">
+                          {caseItem.photos.map((photo, index) => (
+                            <Image
+                              key={index}
+                              src={photo}
+                              alt={`Photo ${index + 1}`}
+                              className="h-16 w-16 rounded object-cover"
+                              height={64}
+                              width={64}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -446,7 +540,7 @@ function DashboardPage() {
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default DashboardPage
+export default DashboardPage;

@@ -26,7 +26,7 @@ export default function SignupPage() {
     setError("")
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/user/register`, {
+      const response = await fetch("http://localhost:5000/api/v1/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullname: fullName, email, password }),
@@ -37,7 +37,9 @@ export default function SignupPage() {
         const data = await response.json()
         console.log(data.data)
 
-        dispatch(setUser(data.data)) // ✅ Correct Redux dispatch
+        dispatch(setUser(data.data.user)); // ✅ Correct Redux dispatch
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
 
         router.push("/dashboard")
       } else {
