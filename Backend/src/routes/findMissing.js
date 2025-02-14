@@ -5,7 +5,7 @@ import {
     searchMissingPersons,
     getMissingPersonById,
     updateMissingPersonStatus,
-} from '../controllers/missingPersonController.js';
+} from '../controllers/findMissing.js';
 import upload from '../middlewares/upload.js';
 
 const router = express.Router();

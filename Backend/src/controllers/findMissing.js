@@ -1,4 +1,4 @@
-import MissingPerson from '../models/MissingPerson.model.js';
+import MissingPerson from '../models/findMissing.model.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import ApiResponse from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
@@ -7,8 +7,8 @@ import User from '../models/user.model.js';
 export const createMissingPerson = async (req, res) => {
     try {
         const { name, age, gender, missingDate, lastSeenLocation } = req.body;
-        console.log(req.body);
-        console.log(req.files);
+        // console.log(req.body);
+        // console.log(req.files);
 
         // Step 1: Validate required fields BEFORE uploading images
         if (!name || !age || !gender || !missingDate || !lastSeenLocation) {

@@ -64,8 +64,8 @@ export default function Navbar() {
   // Base routes always visible.
   const routes = [
     { href: "/", label: "Home" },
+    { href: "/find", label: "Find Missing" },
     { href: "/report", label: "Report Missing" },
-    { href: "/search", label: "Search" },
     { href: "/alerts", label: "Alerts" },
   ];
 

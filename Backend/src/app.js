@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import userRouter from './routes/user.route.js';
-import sightingRoutes from './routes/sightingRoutes.js';
-import missingPersonRoutes from './routes/missingPersonRoutes.js';
+import sightingRoutes from './routes/reportMissing.js';
+import missingPersonRoutes from './routes/findMissing.js';
 import errorHandler from './middlewares/errorHandler.js';
 // import session from 'express-session';
 
