@@ -7,6 +7,8 @@ import User from '../models/user.model.js';
 export const createMissingPerson = async (req, res) => {
     try {
         const { name, age, gender, missingDate, lastSeenLocation } = req.body;
+        console.log(req.body);
+        console.log(req.files);
 
         // Step 1: Validate required fields BEFORE uploading images
         if (!name || !age || !gender || !missingDate || !lastSeenLocation) {
