@@ -1,5 +1,5 @@
-import SightingReport from '../models/SightingReport.model.js';
-import MissingPerson from '../models/MissingPerson.model.js';
+import SightingReport from '../models/reportMissing.model.js';
+import MissingPerson from '../models/findMissing.model.js';
 import { uploadToCloudinary } from '../config/cloudinary.js';
 import ApiResponse from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
@@ -27,7 +27,7 @@ export const createSightingReport = async (req, res) => {
         // Create report
         const report = await SightingReport.create({
             name: name || 'Unknown',
-            // reportedBy: req.user.id,
+            reportedBy: req.user.id,
             photos: photos,
             description,
             location,
@@ -36,7 +36,7 @@ export const createSightingReport = async (req, res) => {
 
         // console.log('report:', report);
         const user = await User.findById(req.user.id);
-        // user.reportedCases.push(sightingReport._id);
+        user.reportedCases.push(report._id);
         await user.save();
 
         return ApiResponse.success(res, {

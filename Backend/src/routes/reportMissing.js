@@ -5,7 +5,7 @@ import {
   getSightingReports,
   getSightingReportById,
   updateSightingStatus
-} from '../controllers/sightingController.js';
+} from '../controllers/reportMissing.js';
 import upload from '../middlewares/upload.js';
 
 const router = express.Router();

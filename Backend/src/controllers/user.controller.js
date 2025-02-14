@@ -66,6 +66,8 @@ const registerUser = async (req, res) => {
             throw new Error('User creation returned null or undefined');
         }
 
+        await user.populate('reportedCases missingCases');
+
         // Generate tokens using the helper function
         const { accessToken, refreshToken } =
             await generateAccessAndRefreshToken(user._id);
@@ -79,6 +81,8 @@ const registerUser = async (req, res) => {
             fullname: user.fullname,
             createdAt: user.createdAt,
             avatar: user.avatar,
+            reportedCases: user.reportedCases,  // now contains full SightingReport docs
+            missingCases: user.missingCases,    // now contains full MissingPerson docs
         };
 
         // Return a successful response including tokens
@@ -139,7 +143,9 @@ const loginUser = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // Retrieve the user data without sensitive information
-    const newUser = await User.findById(user._id).select('-password');
+    const newUser = await User.findById(user._id)
+    .select('-password')
+    .populate('reportedCases missingCases');
     // console.log("newUser", newUser);
     if (!newUser) {
         throw new ApiError(500, 'Error logging in user');
